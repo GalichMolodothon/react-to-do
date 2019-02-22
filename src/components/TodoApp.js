@@ -55,13 +55,27 @@ export default class TodoApp extends React.Component {
     };
 
     this.count = () => {
+      let countItem = this.state.todos.reduce((countItem, item) => {
+            if (item.completed === false) {
+                countItem = countItem + 1;
+            }
+            return countItem;
+        }, 0);
 
-       // return this.state.todos.reduce((count, item) => {
-       //      if (item.completed === false) {
-       //          count = count + 1;
-       //      }
-       //      return count;
-       //  }, 0)}
+      return countItem;
+    };
+
+    this.complete = (todoId, e) => {
+      let newStatus = e.target.checked;
+      let id = todoId;
+        this.setState({
+            todos: this.state.todos.map((todo) => {
+              if (todo.id == id) {
+                todo.completed = newStatus;
+              }
+              return todo;
+            })
+        });
     };
 
     this.state = {
@@ -70,13 +84,14 @@ export default class TodoApp extends React.Component {
         { id: 2, title: 'Todo 2', completed: true },
         { id: 3, title: 'Todo 3', completed: false }
       ],
-      filter: 'all', // active, completed,
+      filter: 'all',
       deleted: [],
       handleFilter: this.handleFilter,
       addTodo: this.addTodo,
       handleCompleted:this.clearToDo,
       handleRemove: this.remove,
-        count:this.count
+      count:this.count,
+      handleComplete: this.complete
     }    
   }
 
@@ -89,11 +104,11 @@ export default class TodoApp extends React.Component {
           <TodoActions />
         </TodoContext.Provider>
       </section>
-      <section className="todoapp">
-        <TodoAdd />
-        <TodoList />
-        <TodoActions />
-      </section>
+        <Calendar
+            selected={this.state.date}
+            onChange={this.handleChange}
+        />
+
     </React.Fragment>;
   }
 }

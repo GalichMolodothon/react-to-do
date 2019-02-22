@@ -10,7 +10,8 @@ export const defaultState = {
   addTodo: () => {},
   handleCompleted: () => {},
   handleRemove: () => {},
-  count: () => {}
+  count: () => {},
+  complete: () => {}
 };
 
 export const TodoContext = React.createContext(defaultState);
