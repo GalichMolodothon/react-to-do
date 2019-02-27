@@ -28,29 +28,49 @@ export default class TodoApp extends React.Component {
           title: value,
           completed: false
         };
-  
-        this.setState({
-          todos: [...this.state.todos, todo]
-        }, () => {
-          target.value = ''
-        })
+
+        fetch('http://localhost:3000/todos', {
+          method: 'post',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+            body: JSON.stringify(todo)
+          })
+        .then(res=>res.json())
+        .then(res => {
+          this.setState({
+              todos: [...this.state.todos, res]
+            }, () => {
+              target.value = ''
+            })
+        });
       }
     };
 
     this.clearToDo = () => {
-        this.setState({
-            todos: this.state.todos.filter((item) => {
-                return item.completed === false
-            })
-        });
+      this.state.todos.forEach((item) => {
+        if (item.completed === true) {
+          this.remove(item.id);
+        }
+      });
     };
 
     this.remove = (value) => {
       let id = value;
-      this.setState({
-          todos: this.state.todos.filter((item) => {
-              return item.id !== id
+
+      fetch(`http://localhost:3000/todos/${id}`, {
+          method: 'delete',
+      })
+      .then(res=>res.json())
+      .then(() => {
+        fetch('http://localhost:3000/todos')
+        .then(response => response.json())
+        .then(todos => {
+          this.setState({
+            todos
           })
+        })
       });
     };
 
@@ -65,25 +85,38 @@ export default class TodoApp extends React.Component {
       return countItem;
     };
 
-    this.complete = (todoId, e) => {
+    this.complete = (todoNewStatus, e) => {
       let newStatus = e.target.checked;
-      let id = todoId;
-        this.setState({
-            todos: this.state.todos.map((todo) => {
-              if (todo.id == id) {
-                todo.completed = newStatus;
-              }
-              return todo;
-            })
-        });
+      let id = todoNewStatus.id;
+      let title = todoNewStatus.title;
+      let todoPut = {
+          id:id,
+          completed:newStatus,
+          title:title
+      };
+      fetch(`http://localhost:3000/todos/${id}`, {
+          method: 'put',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(todoPut)
+      })
+      .then(res=>res.json())
+      .then(res => {
+          this.setState({
+              todos: this.state.todos.map((todo) => {
+                  if (todo.id === res.id) {
+                      todo.completed = res.completed;
+                  }
+                  return todo;
+              })
+          });
+      });
     };
 
     this.state = {
-      todos: [
-        { id: 1, title: 'Todo 1', completed: false },
-        { id: 2, title: 'Todo 2', completed: true },
-        { id: 3, title: 'Todo 3', completed: false }
-      ],
+      todos: [],
       filter: 'all',
       deleted: [],
       handleFilter: this.handleFilter,
@@ -93,6 +126,17 @@ export default class TodoApp extends React.Component {
       count:this.count,
       handleComplete: this.complete
     }    
+  }
+
+  componentDidMount() {
+
+      fetch('http://localhost:3000/todos')
+      .then(response => response.json())
+      .then(todos => {
+          this.setState({
+              todos
+          })
+      })
   }
 
   render() {
